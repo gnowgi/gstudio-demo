@@ -1,0 +1,79 @@
+BEGIN;
+CREATE TABLE "gstudio_metatype" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "title" varchar(255) NOT NULL,
+    "slug" varchar(255) NOT NULL UNIQUE,
+    "description" text NOT NULL,
+    "parent_id" integer,
+    "lft" integer unsigned NOT NULL,
+    "rght" integer unsigned NOT NULL,
+    "tree_id" integer unsigned NOT NULL,
+    "level" integer unsigned NOT NULL
+)
+;
+CREATE TABLE "gstudio_objecttype_metatypes" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "objecttype_id" integer NOT NULL,
+    "metatype_id" integer NOT NULL REFERENCES "gstudio_metatype" ("id"),
+    UNIQUE ("objecttype_id", "metatype_id")
+)
+;
+CREATE TABLE "gstudio_objecttype_related" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "from_objecttype_id" integer NOT NULL,
+    "to_objecttype_id" integer NOT NULL,
+    UNIQUE ("from_objecttype_id", "to_objecttype_id")
+)
+;
+CREATE TABLE "gstudio_objecttype_sites" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "objecttype_id" integer NOT NULL,
+    "site_id" integer NOT NULL REFERENCES "django_site" ("id"),
+    UNIQUE ("objecttype_id", "site_id")
+)
+;
+CREATE TABLE "gstudio_objecttype_authors" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "objecttype_id" integer NOT NULL,
+    "user_id" integer NOT NULL REFERENCES "auth_user" ("id"),
+    UNIQUE ("objecttype_id", "user_id")
+)
+;
+CREATE TABLE "gstudio_objecttype" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "title" varchar(255) NOT NULL,
+    "content" text NOT NULL,
+    "parent_id" integer,
+    "image" varchar(100) NOT NULL,
+    "excerpt" text NOT NULL,
+    "tags" varchar(255) NOT NULL,
+    "slug" varchar(255) NOT NULL,
+    "status" integer NOT NULL,
+    "featured" bool NOT NULL,
+    "comment_enabled" bool NOT NULL,
+    "pingback_enabled" bool NOT NULL,
+    "creation_date" datetime NOT NULL,
+    "last_update" datetime NOT NULL,
+    "start_publication" datetime NOT NULL,
+    "end_publication" datetime NOT NULL,
+    "login_required" bool NOT NULL,
+    "password" varchar(50) NOT NULL,
+    "template" varchar(250) NOT NULL,
+    "lft" integer unsigned NOT NULL,
+    "rght" integer unsigned NOT NULL,
+    "tree_id" integer unsigned NOT NULL,
+    "level" integer unsigned NOT NULL
+)
+;
+CREATE INDEX "gstudio_metatype_63f17a16" ON "gstudio_metatype" ("parent_id");
+CREATE INDEX "gstudio_metatype_42b06ff6" ON "gstudio_metatype" ("lft");
+CREATE INDEX "gstudio_metatype_6eabc1a6" ON "gstudio_metatype" ("rght");
+CREATE INDEX "gstudio_metatype_102f80d8" ON "gstudio_metatype" ("tree_id");
+CREATE INDEX "gstudio_metatype_2a8f42e8" ON "gstudio_metatype" ("level");
+CREATE INDEX "gstudio_objecttype_63f17a16" ON "gstudio_objecttype" ("parent_id");
+CREATE INDEX "gstudio_objecttype_56ae2a2a" ON "gstudio_objecttype" ("slug");
+CREATE INDEX "gstudio_objecttype_42b06ff6" ON "gstudio_objecttype" ("lft");
+CREATE INDEX "gstudio_objecttype_6eabc1a6" ON "gstudio_objecttype" ("rght");
+CREATE INDEX "gstudio_objecttype_102f80d8" ON "gstudio_objecttype" ("tree_id");
+CREATE INDEX "gstudio_objecttype_2a8f42e8" ON "gstudio_objecttype" ("level");
+COMMIT;
