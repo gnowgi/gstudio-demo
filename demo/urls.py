@@ -5,13 +5,14 @@ from django.conf.urls.defaults import url
 from django.conf.urls.defaults import include
 from django.conf.urls.defaults import patterns
 
+
 from gstudio.sitemaps import TagSitemap
 from gstudio.sitemaps import ObjecttypeSitemap
 from gstudio.sitemaps import MetatypeSitemap
 from gstudio.sitemaps import AuthorSitemap
-from objectapp.sitemaps import GBObjectSitemap
-from relationapp.sitemaps import RelationSitemap
-from attributeapp.sitemaps import AttributeSitemap
+
+
+
 
 admin.autodiscover()
 handler500 = 'demo.views.server_error'
@@ -23,22 +24,19 @@ urlpatterns = patterns(
      {'url': '/nodes/'}),
     url(r'^nodes/', include('gstudio.urls')),
     url(r'^objects/', include('objectapp.urls')),
-    url(r'^relations/', include('relationapp.urls')),
-    url(r'^attributes/', include('attributeapp.urls')),
     url(r'^comments/', include('django.contrib.comments.urls')),
     url(r'^xmlrpc/$', 'django_xmlrpc.views.handle_xmlrpc'),
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^grappelli/', include('grappelli.urls')),
     )
 
 sitemaps = {'tags': TagSitemap,
             'blog': ObjecttypeSitemap,
             'authors': AuthorSitemap,
             'objecttypes': MetatypeSitemap,
-            'relationtypes': RelationSitemap,
-            'attributetypes': AttributeSitemap,
-            'gbobjects': GBObjectSitemap}
+            }
 
 urlpatterns += patterns(
     'django.contrib.sitemaps.views',
