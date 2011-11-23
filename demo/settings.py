@@ -66,8 +66,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'gstudio.context_processors.version',
     'objectapp.context_processors.version',
-    'relationapp.context_processors.version',
-    'attributeapp.context_processors.version',
     )
 
 INSTALLED_APPS = (
@@ -85,8 +83,6 @@ INSTALLED_APPS = (
     'reversion',
     'gstudio',
     'objectapp',
-    'relationapp',
-    'attributeapp',
     'tagging',
     'django_xmlrpc',
     'demo',
