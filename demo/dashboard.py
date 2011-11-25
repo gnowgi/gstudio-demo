@@ -15,7 +15,7 @@ from grappelli.dashboard.utils import get_admin_site_name
 
 class CustomIndexDashboard(Dashboard):
     """
-    Custom index dashboard for www.
+    Custom index dashboard for atlas.gnowledge.org
     """
     
     def init_with_context(self, context):
@@ -25,38 +25,49 @@ class CustomIndexDashboard(Dashboard):
         self.children.append(modules.Group(
             _('Group: Administration & Applications'),
             column=1,
-            collapsible=True,
+            collapsible=False,
             children = [
+                modules.AppList(
+                    _('Applications'),
+                    column=1,
+#                    css_classes=('collapse closed',),
+                    exclude=('django.contrib.*',),),
                 modules.AppList(
                     _('Administration'),
                     column=1,
                     collapsible=False,
                     models=('django.contrib.*',),
                 ),
-                modules.AppList(
-                    _('Applications'),
-                    column=1,
-                    css_classes=('collapse closed',),
-                    exclude=('django.contrib.*',),
-                )
+                
             ]
         ))
         
+
+
         # append an app list module for "Applications"
         self.children.append(modules.AppList(
             _('AppList: Applications'),
-            collapsible=True,
-            column=1,
+            collapsible=False,
+            column=2,
             css_classes=('collapse closed',),
             exclude=('django.contrib.*',),
         ))
+
         
         # append an app list module for "Administration"
         self.children.append(modules.ModelList(
             _('ModelList: Administration'),
-            column=1,
+            column=2,
             collapsible=False,
             models=('django.contrib.*',),
+            children=[
+                {
+                    'title': _('FileBrowser'),
+                    'url': '/admin/filebrowser/browse/',
+                    'external': False,
+                },
+            ]
+
         ))
         
         # append another link list module for "support".
