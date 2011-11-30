@@ -1,9 +1,30 @@
 BEGIN;
-CREATE TABLE "gstudio_metatype" (
+CREATE TABLE "gstudio_nid" (
     "id" integer NOT NULL PRIMARY KEY,
-    "title" varchar(255) NOT NULL,
+    "title" varchar(255) NOT NULL
+)
+;
+CREATE TABLE "gstudio_node" (
+    "nid_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_nid" ("id"),
+    "plural" varchar(255)
+)
+;
+CREATE TABLE "gstudio_nodetype" (
+    "node_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_node" ("nid_ptr_id")
+)
+;
+CREATE TABLE "gstudio_edgetype" (
+    "node_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_node" ("nid_ptr_id")
+)
+;
+CREATE TABLE "gstudio_edge" (
+    "nid_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_nid" ("id")
+)
+;
+CREATE TABLE "gstudio_metatype" (
+    "nodetype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_nodetype" ("node_ptr_id"),
     "slug" varchar(255) NOT NULL UNIQUE,
-    "description" text NOT NULL,
+    "description" text,
     "parent_id" integer,
     "lft" integer unsigned NOT NULL,
     "rght" integer unsigned NOT NULL,
@@ -14,11 +35,18 @@ CREATE TABLE "gstudio_metatype" (
 CREATE TABLE "gstudio_objecttype_metatypes" (
     "id" integer NOT NULL PRIMARY KEY,
     "objecttype_id" integer NOT NULL,
-    "metatype_id" integer NOT NULL REFERENCES "gstudio_metatype" ("id"),
+    "metatype_id" integer NOT NULL REFERENCES "gstudio_metatype" ("nodetype_ptr_id"),
     UNIQUE ("objecttype_id", "metatype_id")
 )
 ;
 CREATE TABLE "gstudio_objecttype_related" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "from_objecttype_id" integer NOT NULL,
+    "to_objecttype_id" integer NOT NULL,
+    UNIQUE ("from_objecttype_id", "to_objecttype_id")
+)
+;
+CREATE TABLE "gstudio_objecttype_posteriornode" (
     "id" integer NOT NULL PRIMARY KEY,
     "from_objecttype_id" integer NOT NULL,
     "to_objecttype_id" integer NOT NULL,
@@ -32,6 +60,13 @@ CREATE TABLE "gstudio_objecttype_sites" (
     UNIQUE ("objecttype_id", "site_id")
 )
 ;
+CREATE TABLE "gstudio_objecttype_priornode" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "from_objecttype_id" integer NOT NULL,
+    "to_objecttype_id" integer NOT NULL,
+    UNIQUE ("from_objecttype_id", "to_objecttype_id")
+)
+;
 CREATE TABLE "gstudio_objecttype_authors" (
     "id" integer NOT NULL PRIMARY KEY,
     "objecttype_id" integer NOT NULL,
@@ -40,9 +75,9 @@ CREATE TABLE "gstudio_objecttype_authors" (
 )
 ;
 CREATE TABLE "gstudio_objecttype" (
-    "id" integer NOT NULL PRIMARY KEY,
-    "title" varchar(255) NOT NULL,
-    "content" text NOT NULL,
+    "nodetype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_nodetype" ("node_ptr_id"),
+    "plural" varchar(255),
+    "content" text,
     "parent_id" integer,
     "image" varchar(100) NOT NULL,
     "excerpt" text NOT NULL,
@@ -65,6 +100,75 @@ CREATE TABLE "gstudio_objecttype" (
     "level" integer unsigned NOT NULL
 )
 ;
+CREATE TABLE "gstudio_relationtype" (
+    "objecttype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_objecttype" ("nodetype_ptr_id"),
+    "inverse" varchar(255) NOT NULL,
+    "subjecttypeLeft_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    "applicablenodetypes1" varchar(2) NOT NULL,
+    "cardinalityLeft" integer,
+    "subjecttypeRight_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    "applicablenodetypes2" varchar(2) NOT NULL,
+    "cardinalityRight" integer,
+    "isSymmetrical" bool,
+    "isReflexive" bool,
+    "isTransitive" bool,
+    "lft" integer unsigned NOT NULL
+)
+;
+CREATE TABLE "gstudio_attributetype" (
+    "objecttype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_objecttype" ("nodetype_ptr_id"),
+    "subjecttype_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    "applicablenodetypes" varchar(2) NOT NULL,
+    "dataType" varchar(2) NOT NULL,
+    "lft" integer unsigned NOT NULL
+)
+;
+CREATE TABLE "gstudio_relation" (
+    "edge_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_edge" ("nid_ptr_id"),
+    "subject1Scope" varchar(50),
+    "subject1_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    "relationTypeScope" varchar(50),
+    "relationtype_id" integer NOT NULL REFERENCES "gstudio_relationtype" ("objecttype_ptr_id"),
+    "objectScope" varchar(50),
+    "subject2_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    UNIQUE ("subject1Scope", "subject1_id", "relationTypeScope", "relationtype_id", "objectScope", "subject2_id")
+)
+;
+CREATE TABLE "gstudio_attribute" (
+    "edge_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_edge" ("nid_ptr_id"),
+    "subjectScope" varchar(50),
+    "subject_id" integer NOT NULL REFERENCES "gstudio_nid" ("id"),
+    "attributeTypeScope" varchar(50),
+    "attributeType_id" integer NOT NULL REFERENCES "gstudio_attributetype" ("objecttype_ptr_id"),
+    "valueScope" varchar(50),
+    "value" varchar(100) NOT NULL,
+    UNIQUE ("subjectScope", "subject_id", "attributeTypeScope", "attributeType_id", "valueScope", "value")
+)
+;
+CREATE TABLE "gstudio_systemtype" (
+    "objecttype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_objecttype" ("nodetype_ptr_id"),
+    "lft" integer unsigned NOT NULL
+)
+;
+CREATE TABLE "gstudio_processtype_relationtype_set" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "processtype_id" integer NOT NULL,
+    "relationtype_id" integer NOT NULL REFERENCES "gstudio_relationtype" ("objecttype_ptr_id"),
+    UNIQUE ("processtype_id", "relationtype_id")
+)
+;
+CREATE TABLE "gstudio_processtype_attributetype_set" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "processtype_id" integer NOT NULL,
+    "attributetype_id" integer NOT NULL REFERENCES "gstudio_attributetype" ("objecttype_ptr_id"),
+    UNIQUE ("processtype_id", "attributetype_id")
+)
+;
+CREATE TABLE "gstudio_processtype" (
+    "objecttype_ptr_id" integer NOT NULL PRIMARY KEY REFERENCES "gstudio_objecttype" ("nodetype_ptr_id"),
+    "lft" integer unsigned NOT NULL
+)
+;
 CREATE INDEX "gstudio_metatype_63f17a16" ON "gstudio_metatype" ("parent_id");
 CREATE INDEX "gstudio_metatype_42b06ff6" ON "gstudio_metatype" ("lft");
 CREATE INDEX "gstudio_metatype_6eabc1a6" ON "gstudio_metatype" ("rght");
@@ -76,4 +180,58 @@ CREATE INDEX "gstudio_objecttype_42b06ff6" ON "gstudio_objecttype" ("lft");
 CREATE INDEX "gstudio_objecttype_6eabc1a6" ON "gstudio_objecttype" ("rght");
 CREATE INDEX "gstudio_objecttype_102f80d8" ON "gstudio_objecttype" ("tree_id");
 CREATE INDEX "gstudio_objecttype_2a8f42e8" ON "gstudio_objecttype" ("level");
+CREATE INDEX "gstudio_relationtype_26e8e170" ON "gstudio_relationtype" ("subjecttypeLeft_id");
+CREATE INDEX "gstudio_relationtype_67f25f56" ON "gstudio_relationtype" ("subjecttypeRight_id");
+CREATE INDEX "gstudio_relationtype_42b06ff6" ON "gstudio_relationtype" ("lft");
+CREATE INDEX "gstudio_attributetype_42879b7b" ON "gstudio_attributetype" ("subjecttype_id");
+CREATE INDEX "gstudio_attributetype_42b06ff6" ON "gstudio_attributetype" ("lft");
+CREATE INDEX "gstudio_relation_6f64ba53" ON "gstudio_relation" ("subject1_id");
+CREATE INDEX "gstudio_relation_673d0034" ON "gstudio_relation" ("relationtype_id");
+CREATE INDEX "gstudio_relation_a255d66" ON "gstudio_relation" ("subject2_id");
+CREATE INDEX "gstudio_attribute_638462f1" ON "gstudio_attribute" ("subject_id");
+CREATE INDEX "gstudio_attribute_7b209a2d" ON "gstudio_attribute" ("attributeType_id");
+CREATE INDEX "gstudio_systemtype_42b06ff6" ON "gstudio_systemtype" ("lft");
+CREATE INDEX "gstudio_processtype_42b06ff6" ON "gstudio_processtype" ("lft");
+CREATE TABLE "reversion_revision" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "manager_slug" varchar(200) NOT NULL,
+    "date_created" datetime NOT NULL,
+    "user_id" integer REFERENCES "auth_user" ("id"),
+    "comment" text NOT NULL
+)
+;
+CREATE TABLE "reversion_version" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "revision_id" integer NOT NULL REFERENCES "reversion_revision" ("id"),
+    "object_id" text NOT NULL,
+    "object_id_int" integer,
+    "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"),
+    "format" varchar(255) NOT NULL,
+    "serialized_data" text NOT NULL,
+    "object_repr" text NOT NULL,
+    "type" smallint unsigned NOT NULL
+)
+;
+CREATE INDEX "reversion_revision_10734f62" ON "reversion_revision" ("manager_slug");
+CREATE INDEX "reversion_revision_403f60f" ON "reversion_revision" ("user_id");
+CREATE INDEX "reversion_version_202bdc7f" ON "reversion_version" ("revision_id");
+CREATE INDEX "reversion_version_5e8037c5" ON "reversion_version" ("object_id_int");
+CREATE INDEX "reversion_version_1bb8f392" ON "reversion_version" ("content_type_id");
+CREATE INDEX "reversion_version_f429bc7" ON "reversion_version" ("type");
+CREATE TABLE "tagging_tag" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "name" varchar(50) NOT NULL UNIQUE
+)
+;
+CREATE TABLE "tagging_taggeditem" (
+    "id" integer NOT NULL PRIMARY KEY,
+    "tag_id" integer NOT NULL REFERENCES "tagging_tag" ("id"),
+    "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"),
+    "object_id" integer unsigned NOT NULL,
+    UNIQUE ("tag_id", "content_type_id", "object_id")
+)
+;
+CREATE INDEX "tagging_taggeditem_3747b463" ON "tagging_taggeditem" ("tag_id");
+CREATE INDEX "tagging_taggeditem_1bb8f392" ON "tagging_taggeditem" ("content_type_id");
+CREATE INDEX "tagging_taggeditem_7d61c803" ON "tagging_taggeditem" ("object_id");
 COMMIT;

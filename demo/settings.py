@@ -12,7 +12,9 @@ DATABASES = {'default':
 
 STATIC_URL = '/static/'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/static'
+MEDIA_ROOT = '/static'
+
 
 ADMIN_MEDIA_PREFIX = STATIC_URL + "grappelli/"
 
@@ -28,6 +30,15 @@ LANGUAGE_CODE = 'en'
 GRAPPELLI_ADMIN_TITLE = "Gnowledge Studio"
 
 GRAPPELLI_INDEX_DASHBOARD = "demo.dashboard.CustomIndexDashboard"
+
+
+# Authentication related
+ACCOUNT_ACTIVATION_DAYS = 2
+EMAIL_HOST = 'localhost'
+DEFAULT_FROM_EMAIL = 'webmaster@localhost'
+LOGIN_REDIRECT_URL = '/'
+
+
 
 LANGUAGES = (('en', gettext('English')),
              ('fr', gettext('French')),
@@ -91,8 +102,11 @@ INSTALLED_APPS = (
     'objectapp',
     'tagging',
     'django_xmlrpc',
+    'djangoratings',
+    'registration',
     'demo',
     )
 
 from gstudio.xmlrpc import GSTUDIO_XMLRPC_METHODS
 XMLRPC_METHODS = GSTUDIO_XMLRPC_METHODS
+

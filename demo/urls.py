@@ -19,8 +19,8 @@ handler404 = 'django.views.defaults.page_not_found'
 urlpatterns = patterns(
     '',
     (r'^$', 'django.views.generic.simple.redirect_to',
-     {'url': '/nodes/'}),
-    url(r'^nodes/', include('gstudio.urls')),
+     {'url': '/gstudio/'}),
+    url(r'^gstudio/', include('gstudio.urls')),
     url(r'^objects/', include('objectapp.urls')),
     url(r'^comments/', include('django.contrib.comments.urls')),
     url(r'^xmlrpc/$', 'django_xmlrpc.views.handle_xmlrpc'),
@@ -28,6 +28,9 @@ urlpatterns = patterns(
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^grappelli/', include('grappelli.urls')),
+    url(r'^accounts/', include('registration.urls')),
+    url(r'^$', 'django.views.generic.simple.redirect_to',
+            { 'template': 'index.html' }, 'index'),
     )
 
 sitemaps = {'tags': TagSitemap,
